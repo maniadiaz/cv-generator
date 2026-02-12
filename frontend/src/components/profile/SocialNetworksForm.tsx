@@ -60,9 +60,10 @@ export default function SocialNetworksForm({
   mode,
 }: SocialNetworksFormProps) {
   const { t } = useTranslation();
+  const defaultPlatform = initialData?.platform || 'linkedin';
   const [formData, setFormData] = useState<Omit<SocialNetwork, 'id' | 'created_at' | 'updated_at'>>({
-    platform: initialData?.platform || 'linkedin',
-    url: initialData?.url || '',
+    platform: defaultPlatform,
+    url: initialData?.url || PLATFORM_URL_PATTERNS[defaultPlatform],
     username: initialData?.username || '',
     is_visible: initialData?.is_visible ?? true,
     display_order: initialData?.display_order || 0,
