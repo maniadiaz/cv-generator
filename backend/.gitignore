@@ -1,0 +1,81 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Tests (ocultar implementación de tests)
+tests/
+!tests/.gitkeep
+!tests/README.md
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Exports y previews
+exports/*
+!exports/.gitkeep
+
+# Previews de HTML generados por tests
+previews/*.html
+
+# Template preview images (se generan con: npm run generate:previews)
+public/templates/previews/*.png
+!public/templates/previews/.gitkeep
+
+*.env
+.env.*
+!.env.example
+
+# Database
+database/
+*.sql
+*.db
+*.sqlite
+*.sqlite3
+
+# Backups y Scripts SQL sensibles
+backups/
+!backups/.gitkeep
+
+# Scripts completos (ocultar lógica de negocio)
+scripts/
+!scripts/.gitkeep
+!scripts/README.md
+
+# Uploads de usuarios
+uploads/*
+!uploads/.gitkeep
+
+# Exports de CVs
+exports/*
+!exports/.gitkeep
+
+# Configuración de producción
+config/production.js
+config/secrets.js
+
+# Logs de aplicación
+logs/
+*.log
+
+# Archivos temporales
+tmp/
+temp/
+*.tmp
