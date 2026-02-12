@@ -24,8 +24,6 @@ import {
   Tab,
   MenuItem,
   Stack,
-  useTheme,
-  useMediaQuery,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -91,8 +89,6 @@ const SkillsForm = ({ profileId, onSaveSuccess }: SkillsFormProps) => {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [categories, setCategories] = useState<SkillCategory[]>([]);
   const [loadingCategories, setLoadingCategories] = useState(false);
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   const {
     control,
@@ -116,15 +112,15 @@ const SkillsForm = ({ profileId, onSaveSuccess }: SkillsFormProps) => {
     loadCategories();
   }, [profileId]);
 
-  // Limpiar el campo "name" cuando cambia la categoría
+  // Limpiar el campo "name" cuando cambia la categoría (solo al agregar, no al editar)
   useEffect(() => {
     const subscription = watch((_, { name }) => {
-      if (name === 'category') {
+      if (name === 'category' && dialogOpen && editingId === null) {
         setValue('name', '');
       }
     });
     return () => subscription.unsubscribe();
-  }, [watch, setValue]);
+  }, [watch, setValue, dialogOpen, editingId]);
 
   const loadSkills = async () => {
     try {
@@ -356,9 +352,9 @@ const SkillsForm = ({ profileId, onSaveSuccess }: SkillsFormProps) => {
           <Tabs
             value={selectedCategory}
             onChange={(_, newValue) => setSelectedCategory(newValue)}
-            variant={isMobile ? 'scrollable' : 'standard'}
-            scrollButtons={isMobile ? 'auto' : false}
-            allowScrollButtonsMobile={isMobile}
+            variant="scrollable"
+            scrollButtons="auto"
+            allowScrollButtonsMobile
             sx={{
               '& .MuiTab-root': {
                 minWidth: { xs: 'auto', sm: 90 },

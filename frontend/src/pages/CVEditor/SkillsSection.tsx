@@ -30,9 +30,12 @@ const SkillsSection = () => {
     }
   }, [dispatch, id]);
 
-  const handleSaveSuccess = useCallback(() => {
+  const handleSaveSuccess = useCallback(async () => {
     if (id) {
-      dispatch(updateProfileCompletion(Number(id)));
+      // Pequeño delay para que el backend procese los cambios antes de consultar la completitud
+      setTimeout(async () => {
+        await dispatch(updateProfileCompletion(Number(id)));
+      }, 500);
     }
   }, [dispatch, id]);
 
