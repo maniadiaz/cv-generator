@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
@@ -112,15 +112,22 @@ const SkillsForm = ({ profileId, onSaveSuccess }: SkillsFormProps) => {
     loadCategories();
   }, [profileId]);
 
-  // Limpiar el campo "name" cuando cambia la categoría (solo al agregar, no al editar)
+  // Solo limpiar el nombre cuando se cambia a/desde la categoría 'languages' (usa un select diferente)
+  const prevCategoryRef = useRef<string>('');
   useEffect(() => {
-    const subscription = watch((_, { name }) => {
-      if (name === 'category' && dialogOpen && editingId === null) {
-        setValue('name', '');
+    const subscription = watch((values, { name }) => {
+      if (name === 'category' && dialogOpen) {
+        const newCategory = values.category || '';
+        const prev = prevCategoryRef.current;
+        // Solo limpiar si se cambia a/desde 'languages' porque usa un tipo de input diferente
+        if ((prev === 'languages' || newCategory === 'languages') && prev !== newCategory) {
+          setValue('name', '');
+        }
+        prevCategoryRef.current = newCategory;
       }
     });
     return () => subscription.unsubscribe();
-  }, [watch, setValue, dialogOpen, editingId]);
+  }, [watch, setValue, dialogOpen]);
 
   const loadSkills = async () => {
     try {
@@ -183,6 +190,7 @@ const SkillsForm = ({ profileId, onSaveSuccess }: SkillsFormProps) => {
       proficiency_level: 'advanced',
       years_of_experience: 0,
     });
+    prevCategoryRef.current = 'frameworks_libraries';
     setDialogOpen(true);
   };
 
@@ -194,6 +202,7 @@ const SkillsForm = ({ profileId, onSaveSuccess }: SkillsFormProps) => {
       proficiency_level: skill.proficiency_level,
       years_of_experience: skill.years_of_experience || 0,
     });
+    prevCategoryRef.current = skill.category;
     setDialogOpen(true);
   };
 
