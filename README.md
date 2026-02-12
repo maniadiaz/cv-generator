@@ -45,12 +45,16 @@
 - **Logging**: Winston
 
 #### **Frontend**
-- React + Vite
-- TypeScript
-- TailwindCSS
-- React Router
-- Axios
-- Context API
+- **Build Tool**: Vite 7.3
+- **Framework**: React 18.3
+- **Lenguaje**: TypeScript 5.6
+- **UI Library**: Material-UI (MUI) 6.2
+- **Estado Global**: Redux Toolkit 2.5
+- **Routing**: React Router 7.1
+- **HTTP Client**: Axios 1.7
+- **i18n**: react-i18next 15.2
+- **PWA**: Vite PWA Plugin 0.21 + Workbox 7.3
+- **Styling**: Emotion (CSS-in-JS)
 
 ---
 
@@ -60,7 +64,7 @@
 cv-generator/
 ├── backend/          # API REST con Node.js + Express
 │   ├── src/
-│   │   ├── config/       # Configuraciones
+│   │   ├── config/       # Configuraciones (DB, JWT, etc.)
 │   │   ├── controllers/  # Controladores de rutas
 │   │   ├── models/       # Modelos de Sequelize
 │   │   ├── routes/       # Definición de endpoints
@@ -70,6 +74,27 @@ cv-generator/
 │   │   └── utils/        # Utilidades
 │   ├── package.json
 │   └── README.md         # Documentación detallada del backend
+│
+├── frontend/         # Aplicación React con TypeScript
+│   ├── public/          # Archivos estáticos
+│   │   └── templates/   # Imágenes de plantillas
+│   ├── src/
+│   │   ├── api/         # Servicios de API (authService, profileService, etc.)
+│   │   ├── assets/      # Recursos estáticos (iconos, imágenes)
+│   │   ├── components/  # Componentes React
+│   │   │   ├── auth/    # Login, Register
+│   │   │   ├── layout/  # MainLayout, Header, Footer
+│   │   │   └── profile/ # TemplateSelector, ColorSchemeSelector, PDFPreview
+│   │   ├── hooks/       # Custom Hooks (useAppSelector, useAppDispatch)
+│   │   ├── i18n/        # Internacionalización (es, en)
+│   │   ├── pages/       # Páginas principales (Auth, Dashboard, CVEditor)
+│   │   ├── redux/       # Estado global (store, slices)
+│   │   ├── routes/      # Configuración de rutas
+│   │   ├── theme/       # Configuración de temas MUI
+│   │   ├── types/       # Definiciones TypeScript
+│   │   └── utils/       # Utilidades (userStorage, etc.)
+│   ├── package.json
+│   └── README.md        # Documentación detallada del frontend
 │
 └── README.md         # Este archivo
 ```
@@ -89,6 +114,20 @@ cv-generator/
 - **Gestión de errores** centralizada
 - **Sequelize ORM** con migraciones
 - **Generación de PDF** con Puppeteer (headless Chrome)
+
+### Frontend Web Application
+
+- **Arquitectura basada en Redux** para gestión de estado global
+- **TypeScript completo** con tipado estricto para mayor seguridad
+- **Material-UI (MUI)** para componentes UI consistentes y profesionales
+- **React Router** para navegación SPA fluida
+- **Internacionalización (i18n)** con soporte para Español e Inglés
+- **PWA (Progressive Web App)** con Service Workers y cache offline
+- **Tema claro/oscuro** con persistencia de preferencias
+- **Responsive Design** optimizado para desktop, tablet y móvil
+- **Redux Toolkit** para manejo simplificado del estado
+- **Axios** con interceptors para manejo de autenticación
+- **LocalStorage** para persistencia de sesión y preferencias
 
 ### Plantillas de CV
 
@@ -136,9 +175,18 @@ Para más detalles sobre la implementación completa, por favor contacta al desa
 ## 📚 Documentación
 
 - **Backend API**: Ver [backend/README.md](backend/README.md) para documentación completa del API
-- **Endpoints**: Más de 50 endpoints documentados con ejemplos
-- **Modelos de Datos**: Esquemas completos de base de datos
-- **Guía de Seguridad**: Mejores prácticas implementadas
+  - Más de 50 endpoints documentados con ejemplos
+  - Modelos de Datos: Esquemas completos de base de datos
+  - Guía de Seguridad: Mejores prácticas implementadas
+  - Configuración y deployment del servidor
+
+- **Frontend App**: Ver [frontend/README.md](frontend/README.md) para documentación completa del frontend
+  - Componentes React y arquitectura
+  - Gestión de estado con Redux
+  - Sistema de rutas y navegación
+  - Internacionalización y temas
+  - PWA y optimizaciones
+  - Guía de desarrollo y deployment
 
 ---
 
@@ -153,12 +201,24 @@ Para más detalles sobre la implementación completa, por favor contacta al desa
 
 ### Para Desarrolladores (Portafolio)
 Este proyecto demuestra:
+
+**Backend:**
 - ✅ Arquitectura MVC bien estructurada
 - ✅ API REST con buenas prácticas
-- ✅ Autenticación y autorización robusta
+- ✅ Autenticación y autorización robusta (JWT)
 - ✅ Manejo de relaciones complejas en base de datos
 - ✅ Integración con servicios externos (PDF generation)
-- ✅ Código limpio y mantenible
+- ✅ Validación de datos con Joi
+- ✅ Logging y manejo de errores centralizado
+
+**Frontend:**
+- ✅ Aplicación React moderna con TypeScript
+- ✅ Arquitectura Redux para estado global
+- ✅ Componentes reutilizables con Material-UI
+- ✅ Internacionalización (i18n) multi-idioma
+- ✅ Progressive Web App (PWA)
+- ✅ Responsive Design
+- ✅ Código tipado y mantenible
 - ✅ Documentación completa
 
 ---
