@@ -36,7 +36,8 @@
     "offlineReady": "App ready to work offline",
     "updateAvailable": "New version available",
     "updateNow": "Update now",
-    "autoUpdating": "Auto-updating in 3 seconds..."
+    "autoUpdating": "Auto-updating in {{seconds}} seconds...",
+    "updating": "Installing update..."
   },
   "auth": {
     "login": "Login",
@@ -170,6 +171,8 @@
     "description": "Description",
     "achievements": "Achievements and responsibilities",
     "achievementsPlaceholder": "Describe your main achievements and responsibilities...",
+    "achievementBulletPlaceholder": "Describe an achievement or responsibility...",
+    "addAchievement": "Add point",
     "technologies": "Technologies",
     "technologiesHelper": "Separate technologies with commas",
     "saveError": "Error saving experience",

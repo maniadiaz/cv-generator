@@ -1,131 +1,97 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRegisterSW } from 'virtual:pwa-register/react';
-import { Snackbar, Button, Alert, Box, CircularProgress } from '@mui/material';
+import { Snackbar, Button, Alert, Box, LinearProgress } from '@mui/material';
 import { useTranslation } from 'react-i18next';
+
+const AUTO_UPDATE_DELAY = 4000;
 
 const PWAUpdatePrompt = () => {
   const { t } = useTranslation();
-  const [showReload, setShowReload] = useState(false);
-  const [waitingWorker, setWaitingWorker] = useState<ServiceWorker | null>(null);
+  const [updating, setUpdating] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const {
     offlineReady: [offlineReady, setOfflineReady],
     needRefresh: [needRefresh, setNeedRefresh],
     updateServiceWorker,
   } = useRegisterSW({
-    onRegisteredSW(swUrl: string, registration: ServiceWorkerRegistration | undefined) {
-      console.log('Service Worker registrado:', swUrl);
-      
-      // Verificar actualizaciones cada 60 segundos
+    onRegisteredSW(_swUrl: string, registration: ServiceWorkerRegistration | undefined) {
       if (registration) {
-        setInterval(() => {
-          registration.update();
-        }, 60000);
+        // Comprobar actualizaciones cada 60 segundos
+        setInterval(() => registration.update(), 60_000);
       }
     },
     onRegisterError(error: Error) {
       console.error('Error al registrar Service Worker:', error);
     },
-    onNeedRefresh() {
-      console.log('Nueva versión disponible');
-      setShowReload(true);
-    },
-    onOfflineReady() {
-      console.log('App lista para funcionar offline');
-    },
   });
 
-  useEffect(() => {
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.ready.then((registration) => {
-        // Escuchar cambios en el service worker
-        registration.addEventListener('updatefound', () => {
-          const newWorker = registration.installing;
-          if (newWorker) {
-            newWorker.addEventListener('statechange', () => {
-              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                console.log('Nueva versión instalada, esperando activación');
-                setWaitingWorker(newWorker);
-                setShowReload(true);
-              }
-            });
-          }
-        });
-
-        // Escuchar mensajes del service worker
-        navigator.serviceWorker.addEventListener('controllerchange', () => {
-          console.log('Service Worker actualizado, recargando página...');
-          window.location.reload();
-        });
-      });
-    }
-  }, []);
-
-  const handleUpdate = async () => {
-    setShowReload(false);
-    
-    if (waitingWorker) {
-      // Enviar mensaje SKIP_WAITING al service worker
-      waitingWorker.postMessage({ type: 'SKIP_WAITING' });
-    } else {
-      // Usar el método de vite-plugin-pwa
-      await updateServiceWorker(true);
-    }
+  const doUpdate = () => {
+    if (updating) return;
+    setUpdating(true);
+    if (timerRef.current) clearTimeout(timerRef.current);
+    // updateServiceWorker(true) envía SKIP_WAITING y recarga
+    updateServiceWorker(true);
   };
 
   const handleClose = () => {
-    setShowReload(false);
+    if (timerRef.current) clearTimeout(timerRef.current);
     setOfflineReady(false);
     setNeedRefresh(false);
   };
 
-  // Auto-actualizar después de 3 segundos si hay una nueva versión
+  // Auto-update después del delay
   useEffect(() => {
-    if (showReload || needRefresh) {
-      const timer = setTimeout(() => {
-        console.log('Auto-actualizando aplicación...');
-        handleUpdate();
-      }, 3000);
+    if (!needRefresh || updating) return;
 
-      return () => clearTimeout(timer);
-    }
-  }, [showReload, needRefresh]);
+    timerRef.current = setTimeout(doUpdate, AUTO_UPDATE_DELAY);
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, [needRefresh]);
+
+  const secondsLeft = Math.round(AUTO_UPDATE_DELAY / 1000);
 
   return (
     <>
       {offlineReady && (
         <Snackbar
-          open={true}
+          open
           autoHideDuration={3000}
           onClose={handleClose}
           anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
         >
           <Alert severity="success" onClose={handleClose}>
-            {t('pwa.offlineReady') || 'App lista para funcionar sin conexión'}
+            {t('pwa.offlineReady')}
           </Alert>
         </Snackbar>
       )}
 
-      {(showReload || needRefresh) && (
+      {needRefresh && (
         <Snackbar
-          open={true}
+          open
           anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
           sx={{ mb: 2 }}
         >
           <Alert
             severity="info"
-            icon={<CircularProgress size={20} />}
             action={
-              <Button color="inherit" size="small" onClick={handleUpdate}>
-                {t('pwa.updateNow') || 'Actualizar ahora'}
-              </Button>
+              !updating && (
+                <Button color="inherit" size="small" onClick={doUpdate}>
+                  {t('pwa.updateNow')}
+                </Button>
+              )
             }
+            sx={{ width: '100%' }}
           >
             <Box>
-              <strong>{t('pwa.updateAvailable') || 'Nueva versión disponible'}</strong>
+              <strong>{t('pwa.updateAvailable')}</strong>
               <br />
-              {t('pwa.autoUpdating') || 'Actualizando automáticamente en 3 segundos...'}
+              {updating
+                ? t('pwa.updating')
+                : t('pwa.autoUpdating', { seconds: secondsLeft })}
             </Box>
+            {updating && <LinearProgress sx={{ mt: 1 }} />}
           </Alert>
         </Snackbar>
       )}

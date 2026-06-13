@@ -36,7 +36,8 @@
     "offlineReady": "App lista para funcionar sin conexión",
     "updateAvailable": "Nueva versión disponible",
     "updateNow": "Actualizar ahora",
-    "autoUpdating": "Actualizando automáticamente en 3 segundos..."
+    "autoUpdating": "Actualizando automáticamente en {{seconds}} segundos...",
+    "updating": "Instalando actualización..."
   },
   "auth": {
     "login": "Iniciar sesión",
@@ -170,6 +171,8 @@
     "description": "Descripción",
     "achievements": "Logros y responsabilidades",
     "achievementsPlaceholder": "Describe tus logros y responsabilidades principales...",
+    "achievementBulletPlaceholder": "Describe un logro o responsabilidad...",
+    "addAchievement": "Agregar punto",
     "technologies": "Tecnologías",
     "technologiesHelper": "Separa las tecnologías con comas",
     "saveError": "Error al guardar la experiencia",

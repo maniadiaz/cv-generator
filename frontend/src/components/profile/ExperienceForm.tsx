@@ -28,6 +28,8 @@ import {
   Edit as EditIcon,
   Delete as DeleteIcon,
   DragIndicator as DragIcon,
+  RemoveCircleOutline as RemoveBulletIcon,
+  AddCircleOutline as AddBulletIcon,
 } from '@mui/icons-material';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import type { DropResult } from '@hello-pangea/dnd';
@@ -66,6 +68,7 @@ const ExperienceForm = ({ profileId, onSaveSuccess }: ExperienceFormProps) => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [bullets, setBullets] = useState<string[]>(['']);
 
   const {
     control,
@@ -88,6 +91,31 @@ const ExperienceForm = ({ profileId, onSaveSuccess }: ExperienceFormProps) => {
   });
 
   const isCurrent = watch('is_current');
+
+  const parseAchievements = (text: string | undefined): string[] => {
+    if (!text) return [''];
+    const lines = text
+      .split('\n')
+      .map((line) => line.replace(/^[*\-]\s*/, '').trim())
+      .filter((line) => line.length > 0);
+    return lines.length > 0 ? lines : [''];
+  };
+
+  const buildAchievements = (): string =>
+    bullets
+      .filter((b) => b.trim().length > 0)
+      .map((b) => `* ${b.trim()}`)
+      .join('\n');
+
+  const addBullet = () => setBullets((prev) => [...prev, '']);
+  const removeBullet = (i: number) =>
+    setBullets((prev) => (prev.length === 1 ? [''] : prev.filter((_, idx) => idx !== i)));
+  const updateBullet = (i: number, value: string) =>
+    setBullets((prev) => {
+      const updated = [...prev];
+      updated[i] = value;
+      return updated;
+    });
 
   useEffect(() => {
     loadExperience();
@@ -115,6 +143,7 @@ const ExperienceForm = ({ profileId, onSaveSuccess }: ExperienceFormProps) => {
 
   const handleAdd = () => {
     setEditingId(null);
+    setBullets(['']);
     reset({
       project_title: '',
       position: '',
@@ -130,6 +159,7 @@ const ExperienceForm = ({ profileId, onSaveSuccess }: ExperienceFormProps) => {
 
   const handleEdit = (experience: Experience) => {
     setEditingId(experience.id);
+    setBullets(parseAchievements(experience.achievements));
     reset({
       project_title: experience.project_title,
       position: experience.position,
@@ -165,10 +195,11 @@ const ExperienceForm = ({ profileId, onSaveSuccess }: ExperienceFormProps) => {
   const onSubmit = async (data: CreateExperienceData) => {
     try {
       setError(null);
+      const payload = { ...data, achievements: buildAchievements() };
       if (editingId) {
-        await experienceService.updateExperience(profileId, editingId, data);
+        await experienceService.updateExperience(profileId, editingId, payload);
       } else {
-        await experienceService.createExperience(profileId, data);
+        await experienceService.createExperience(profileId, payload);
       }
       await loadExperience();
       onSaveSuccess?.();
@@ -319,9 +350,17 @@ const ExperienceForm = ({ profileId, onSaveSuccess }: ExperienceFormProps) => {
                                   </Typography>
                                 )}
                                 {experience.achievements && (
-                                  <Typography variant="body2" sx={{ mt: 1 }}>
-                                    {experience.achievements}
-                                  </Typography>
+                                  <Box component="ul" sx={{ mt: 1, mb: 0, pl: 2.5 }}>
+                                    {experience.achievements
+                                      .split('\n')
+                                      .map((line) => line.replace(/^[*\-]\s*/, '').trim())
+                                      .filter((line) => line.length > 0)
+                                      .map((line, i) => (
+                                        <Typography key={i} component="li" variant="body2">
+                                          {line}
+                                        </Typography>
+                                      ))}
+                                  </Box>
                                 )}
                               </Box>
                             </Box>
@@ -481,22 +520,37 @@ const ExperienceForm = ({ profileId, onSaveSuccess }: ExperienceFormProps) => {
                 </Grid>
 
                 <Grid size={{ xs: 12 }}>
-                  <Controller
-                    name="achievements"
-                    control={control}
-                    render={({ field }) => (
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                    {t('experience.achievements')}
+                  </Typography>
+                  {bullets.map((bullet, i) => (
+                    <Box key={i} sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                      <Typography color="text.secondary" sx={{ fontSize: 18, lineHeight: 1 }}>•</Typography>
                       <TextField
-                        {...field}
                         fullWidth
-                        multiline
-                        rows={4}
-                        label={t('experience.achievements')}
-                        placeholder={t('experience.achievementsPlaceholder')}
-                        error={!!errors.achievements}
-                        helperText={errors.achievements ? t(errors.achievements.message as string) : ''}
+                        size="small"
+                        value={bullet}
+                        onChange={(e) => updateBullet(i, e.target.value)}
+                        placeholder={t('experience.achievementBulletPlaceholder')}
                       />
-                    )}
-                  />
+                      <IconButton
+                        size="small"
+                        color="error"
+                        onClick={() => removeBullet(i)}
+                        disabled={bullets.length === 1 && bullet === ''}
+                      >
+                        <RemoveBulletIcon fontSize="small" />
+                      </IconButton>
+                    </Box>
+                  ))}
+                  <Button
+                    size="small"
+                    startIcon={<AddBulletIcon />}
+                    onClick={addBullet}
+                    sx={{ mt: 0.5 }}
+                  >
+                    {t('experience.addAchievement')}
+                  </Button>
                 </Grid>
               </Grid>
             </Box>
