@@ -254,6 +254,7 @@ class TemplateController {
             ${personalInfo.email ? `${personalInfo.email}` : ''}
             ${personalInfo.phone ? ` | ${personalInfo.phone}` : ''}
             ${personalInfo.location ? ` | ${personalInfo.location}` : ''}
+            ${socialNetworks.filter(s => s.is_visible).map(s => ` | <a href="${s.url}" style="color:inherit;text-decoration:none;">${s.platform}${s.username ? ': ' + s.username : ''}</a>`).join('')}
         </div>
     </div>
 
@@ -278,7 +279,7 @@ class TemplateController {
                     ${TemplateController.formatDate(exp.start_date)} - ${exp.is_current ? 'Presente' : TemplateController.formatDate(exp.end_date)}
                 </div>
             </div>
-            ${exp.achievements ? `<p class="description">${exp.achievements}</p>` : ''}
+            ${exp.achievements ? TemplateController.renderAchievements(exp.achievements) : ''}
             ${exp.technologies ? `<div style="margin-top: 5px;"><strong>Tecnologías:</strong> ${exp.technologies}</div>` : ''}
         </div>
         `).join('')}
@@ -495,6 +496,7 @@ class TemplateController {
             ${personalInfo.email ? `${personalInfo.email}` : ''}
             ${personalInfo.phone ? ` | ${personalInfo.phone}` : ''}
             ${personalInfo.location ? ` | ${personalInfo.location}` : ''}
+            ${socialNetworks.filter(s => s.is_visible).map(s => ` | <a href="${s.url}" style="color:inherit;text-decoration:none;opacity:0.95;">${s.platform}${s.username ? ': ' + s.username : ''}</a>`).join('')}
         </div>
     </div>
 
@@ -522,7 +524,7 @@ class TemplateController {
                         ${TemplateController.formatDate(exp.start_date)} - ${exp.is_current ? 'Presente' : TemplateController.formatDate(exp.end_date)}
                     </div>
                 </div>
-                ${exp.achievements ? `<p class="description">${exp.achievements}</p>` : ''}
+                ${exp.achievements ? TemplateController.renderAchievements(exp.achievements) : ''}
                 ${exp.technologies ? `<div style="margin-top: 8px; color: #7f8c8d;"><strong>Tecnologías:</strong> ${exp.technologies}</div>` : ''}
             </div>
             `).join('')}
@@ -812,7 +814,6 @@ class TemplateController {
             <h1 class="name-title">${personalInfo.full_name || 'Nombre Completo'}</h1>
             <div class="title">${personalInfo.professional_title || 'Título Profesional'}</div>
 
-            ${personalInfo.email || personalInfo.phone || personalInfo.location ? `
             <div class="sidebar-section">
                 <h3>Contacto</h3>
                 ${personalInfo.email ? `
@@ -830,7 +831,12 @@ class TemplateController {
                     <strong>Ubicación</strong>
                     ${personalInfo.location}
                 </div>` : ''}
-            </div>` : ''}
+                ${socialNetworks.filter(s => s.is_visible).map(social => `
+                <div class="contact-item">
+                    <strong>${social.platform}</strong>
+                    ${social.url ? `<a href="${social.url}" style="color: ${colors.accent}; text-decoration: none;">${social.username || social.url}</a>` : (social.username || '')}
+                </div>`).join('')}
+            </div>
 
             ${skills.filter(s => s.is_visible).length > 0 ? `
             <div class="sidebar-section">
@@ -855,15 +861,6 @@ class TemplateController {
                     ${lang.name} - <span class="language-level">${TemplateController.formatLanguageLevel(lang.proficiency_level)}</span>
                 </div>`).join('')}
             </div>` : ''}
-
-            ${socialNetworks.filter(s => s.is_visible).length > 0 ? `
-            <div class="sidebar-section">
-                <h3>Redes</h3>
-                ${socialNetworks.filter(s => s.is_visible).map(social => `
-                <div class="contact-item">
-                    ${social.url ? `<a href="${social.url}" style="color: ${colors.accent}; text-decoration: none;">${social.platform}</a>` : social.platform}
-                </div>`).join('')}
-            </div>` : ''}
         </aside>
 
         <!-- Main Content -->
@@ -886,7 +883,7 @@ class TemplateController {
                         </div>
                     </div>
                     <div class="entry-subtitle">${exp.company || exp.institution || ''}</div>
-                    ${exp.achievements ? `<div class="entry-description">${exp.achievements}</div>` : ''}
+                    ${exp.achievements ? TemplateController.renderAchievements(exp.achievements, 'entry-description') : ''}
                     ${exp.technologies ? `
                     <div class="technologies">
                         ${exp.technologies.split(',').map(tech => `<span class="tech-tag">${tech.trim()}</span>`).join('')}
@@ -1090,8 +1087,7 @@ class TemplateController {
             ${personalInfo.email ? `Correo: ${personalInfo.email}` : ''}
             ${personalInfo.phone ? `<br>Teléfono: ${personalInfo.phone}` : ''}
             ${personalInfo.location ? `<br>Ubicación: ${personalInfo.location}` : ''}
-            ${personalInfo.linkedin ? `<br>LinkedIn: ${personalInfo.linkedin}` : ''}
-            ${personalInfo.website ? `<br>Sitio web: ${personalInfo.website}` : ''}
+            ${socialNetworks.filter(s => s.is_visible).map(s => `<br>${s.platform}${s.username ? ': ' + s.username : ''}: <a href="${s.url}" style="color:inherit;text-decoration:none;">${s.url}</a>`).join('')}
         </div>
     </div>
 
@@ -1115,7 +1111,7 @@ class TemplateController {
                 </div>
                 ${exp.location ? `<div class="entry-location">${exp.location}</div>` : ''}
             </div>
-            ${exp.achievements ? `<div class="description">${exp.achievements}</div>` : ''}
+            ${exp.achievements ? TemplateController.renderAchievements(exp.achievements) : ''}
             ${exp.technologies ? `<div class="description"><strong>Tecnologías:</strong> ${exp.technologies}</div>` : ''}
         </div>
         `).join('')}
@@ -1178,6 +1174,32 @@ class TemplateController {
 </body>
 </html>
     `.trim();
+  }
+
+  /**
+   * Renderizar achievements como lista HTML si contiene bullets con *
+   * @private
+   */
+  static renderAchievements(achievements, cssClass = 'description') {
+    if (!achievements) return '';
+
+    let text = achievements;
+    if (typeof text !== 'string') {
+      try { text = Array.isArray(text) ? text.join('\n') : JSON.stringify(text); } catch { return ''; }
+    }
+
+    const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+    const hasBullets = lines.some(l => l.startsWith('*') || l.startsWith('-'));
+
+    if (!hasBullets) {
+      return `<p class="${cssClass}">${text}</p>`;
+    }
+
+    const items = lines
+      .map(l => (l.startsWith('*') || l.startsWith('-')) ? l.slice(1).trim() : l)
+      .filter(l => l.length > 0);
+
+    return `<ul class="${cssClass}">${items.map(item => `<li>${item}</li>`).join('')}</ul>`;
   }
 
   /**
